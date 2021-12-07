@@ -22,20 +22,23 @@ stack_top:
 /* Build GDT pointer and load it */
 .global gdt_load_and_set
 gdt_load_and_set:
-   mov 4(%esp),%eax
+   movl 4(%esp),%eax
    lgdt (%eax)
 
-   mov $0x10, %ax
-   mov %ax, %ds
-   mov %ax, %es
-   mov %ax, %fs
-   mov %ax, %gs
-   mov %ax, %ss
-   jmp  $0x08,$flush
+   jmp  1f
+1f:
 
-flush:
-   ret
-	
+   movw $0x10, %ax
+   movw %ax, %ds
+   movw %ax, %es
+   movw %ax, %fs
+   movw %ax, %gs
+   movw %ax, %ss
+
+   movl (%esp), %eax
+   pushl %eax
+   movl $0x08, 4(%esp)
+   lret
 .global load_idt   
 load_idt:
    mov %eax, 4(%esp)  /* Get the pointer to the IDT, passed as a parameter. */

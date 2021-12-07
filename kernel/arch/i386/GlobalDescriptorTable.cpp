@@ -8,19 +8,22 @@
 
 extern "C" void gdt_load_and_set(unsigned int);
 
+Kernel::GlobalDescriptorTableEntry gdt_entries[GDT_NUM_ENTRIES];
+
 namespace Kernel
 {
-
     GlobalDescriptorTable::GlobalDescriptorTable()
     {
-        gtdPointer.limit = sizeof(GlobalDescriptorTableEntry) * GDT_NUM_ENTRIES;
+    
+        GlobalDescriptorTablePointer gtdPointer;
+        gtdPointer.limit = (sizeof(GlobalDescriptorTableEntry) * GDT_NUM_ENTRIES) - 1 ;
         gtdPointer.base = (unsigned int)&gdt_entries;
 
         CreateEntry(0, 0, 0, 0, 0);                // Null segment
         CreateEntry(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); // Code segment
         CreateEntry(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Data segment
-        CreateEntry(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); // User mode code segment
-        CreateEntry(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); // User mode data segment
+        // CreateEntry(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); // User mode code segment
+        // CreateEntry(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); // User mode data segment
         gdt_load_and_set((unsigned int)&gtdPointer);
     }
 

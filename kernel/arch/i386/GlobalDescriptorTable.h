@@ -3,7 +3,7 @@
 #define PL3 0x3
 #define PL0 0x0
 
-#define GDT_NUM_ENTRIES 6
+#define GDT_NUM_ENTRIES 3
 
 namespace Kernel
 {
@@ -22,13 +22,10 @@ namespace Kernel
         unsigned short limit; /* Size of gdt table in bytes*/
         unsigned int base;    /* Address to the first gdt entry */
     } __attribute__((packed));
-    
+
     class GlobalDescriptorTable
     {
     private:
-        GlobalDescriptorTableEntry gdt_entries[GDT_NUM_ENTRIES];
-        GlobalDescriptorTablePointer gtdPointer;
-
         void CreateEntry(int num, unsigned int base, unsigned int limit, unsigned char access, unsigned char gran);
 
     public:

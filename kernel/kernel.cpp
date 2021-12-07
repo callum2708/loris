@@ -4,7 +4,6 @@
 #include "arch/i386/GlobalDescriptorTable.h"
 #include "arch/i386/InterruptDescriptorTable.h"
 
-
 extern "C" void kernel_main(void) {
 	Kernel::GlobalDescriptorTable gdt;
 	// Kernel::InterruptDescriptorTable idt;
