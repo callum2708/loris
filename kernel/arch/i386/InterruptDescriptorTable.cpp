@@ -2,54 +2,45 @@
 #include <stdio.h>
 #include <string.h>
 
-extern void isr0() __asm__ ("isr0");
-extern void isr1() __asm__ ("isr1");
-extern void isr2() __asm__ ("isr2");
-extern void isr3() __asm__ ("isr3");
-extern void isr4() __asm__ ("isr4");
-extern void isr5() __asm__ ("isr5");
-extern void isr6() __asm__ ("isr6");
-extern void isr7() __asm__ ("isr7");
-extern void isr8() __asm__ ("isr8");
-extern void isr9() __asm__ ("isr9");
-extern void isr10() __asm__ ("isr10");
-extern void isr11() __asm__ ("isr11");
-extern void isr12() __asm__ ("isr12");
-extern void isr13() __asm__ ("isr13");
-extern void isr14() __asm__ ("isr14");
-extern void isr15() __asm__ ("isr15");
-extern void isr16() __asm__ ("isr16");
-extern void isr17() __asm__ ("isr17");
-extern void isr18() __asm__ ("isr18");
-extern void isr19() __asm__ ("isr19");
-extern void isr20() __asm__ ("isr20");
-extern void isr21() __asm__ ("isr21");
-extern void isr22() __asm__ ("isr22");
-extern void isr23() __asm__ ("isr23");
-extern void isr24() __asm__ ("isr24");
-extern void isr25() __asm__ ("isr25");
-extern void isr26() __asm__ ("isr26");
-extern void isr27() __asm__ ("isr27");
-extern void isr28() __asm__ ("isr28");
-extern void isr29() __asm__ ("isr29");
-extern void isr30() __asm__ ("isr30");
-extern void isr31() __asm__ ("isr31");
+extern "C" void isr0();
+extern "C" void isr1();
+extern "C" void isr2();
+extern "C" void isr3();
+extern "C" void isr4();
+extern "C" void isr5();
+extern "C" void isr6();
+extern "C" void isr7();
+extern "C" void isr8();
+extern "C" void isr9();
+extern "C" void isr10();
+extern "C" void isr11();
+extern "C" void isr12();
+extern "C" void isr13();
+extern "C" void isr14();
+extern "C" void isr15();
+extern "C" void isr16();
+extern "C" void isr17();
+extern "C" void isr18();
+extern "C" void isr19();
+extern "C" void isr20();
+extern "C" void isr21();
+extern "C" void isr22();
+extern "C" void isr23();
+extern "C" void isr24();
+extern "C" void isr25();
+extern "C" void isr26();
+extern "C" void isr27();
+extern "C" void isr28();
+extern "C" void isr29();
+extern "C" void isr30();
+extern "C" void isr31();
 
+extern "C" void load_idt(unsigned int idtPointer);
 
-extern void load_idt(unsigned int idtPointer) __asm__("load_idt");
-
-typedef struct registers
-{
-    unsigned int ds;                                     // Data segment selector
-    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
-    unsigned int int_no, err_code;                       // Interrupt number and error code (if applicable)
-    unsigned int eip, cs, eflags, useresp, ss;           // Pushed by the processor automatically.
-} registers_t;
-
-extern "C" void isr_handler(registers_t regs)
+extern "C" void isr_handler(Kernel::registers* regs)
 {
     printf("recieved interrupt: ");
-    printf("%d", regs.int_no);
+    printf("%d", regs->int_no);
     printf("\n");
 }
 
@@ -57,12 +48,9 @@ namespace Kernel
 {
     InterruptDescriptorTable::InterruptDescriptorTable()
     {
+        IDTPointer idtPointer;
         idtPointer.limit = IDT_NUM_ENTRIES * sizeof(IDTGate) - 1;
         idtPointer.base = (unsigned int)&entries;
-
-        printf("%d", idtPointer.limit);
-        printf("%d", idtPointer.base);
-        memset(entries, 0, IDT_NUM_ENTRIES * sizeof(IDTGate));
 
         CreateGate(0, (unsigned int)isr0, 0x08, 0x8E);
         CreateGate(1, (unsigned int)isr1, 0x08, 0x8E);
@@ -112,4 +100,3 @@ namespace Kernel
         entries[num].config = flags /* | 0x60 */;
     }
 }
-

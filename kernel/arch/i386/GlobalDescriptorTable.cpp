@@ -8,8 +8,6 @@
 
 extern "C" void gdt_load_and_set(unsigned int);
 
-Kernel::GlobalDescriptorTableEntry gdt_entries[GDT_NUM_ENTRIES];
-
 namespace Kernel
 {
     GlobalDescriptorTable::GlobalDescriptorTable()

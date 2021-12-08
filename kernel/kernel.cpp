@@ -6,9 +6,10 @@
 
 extern "C" void kernel_main(void) {
 	Kernel::GlobalDescriptorTable gdt;
-	// Kernel::InterruptDescriptorTable idt;
+	Kernel::InterruptDescriptorTable idt;
 	printf("Hello, kernel World!\n");
 
-	// asm volatile ("int $0x3");
+	asm volatile ("int $0x3");
+	// printf("hello");
 	// asm volatile ("int $0x4");	
 }
