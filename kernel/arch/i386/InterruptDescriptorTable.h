@@ -33,8 +33,6 @@ namespace Kernel
         InterruptDescriptorTable();
 
     private:
-        IDTGate entries[IDT_NUM_ENTRIES];
-
         void CreateGate(unsigned char num, unsigned int base, unsigned char sel, unsigned char flags);
     };
 }

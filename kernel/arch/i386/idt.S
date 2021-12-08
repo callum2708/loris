@@ -47,11 +47,11 @@ ISR_NOERRCODE 29
 ISR_NOERRCODE 30
 ISR_NOERRCODE 31
 
-.global isr_handler
+.extern isr_handler
 isr_common_stub:
    pusha                    /* Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax */
 
-   mov %ax, %ds               /* Lower 16-bits of eax = ds. */
+   mov %ds,  %ax               /* Lower 16-bits of eax = ds. */
    push %eax                 /* save the data segment descriptor */
 
    mov %ax, 0x10  /* load the kernel data segment descriptor */
@@ -60,6 +60,7 @@ isr_common_stub:
    mov %fs, %ax
    mov %gs, %ax
 
+   push %esp
    call isr_handler
 
    pop %eax        /* reload the original data segment descriptor */
@@ -69,5 +70,5 @@ isr_common_stub:
    mov %gs, %ax
 
    popa                     /* Pops edi,esi,ebp... */
-   add %esp, 8     /* Cleans up the pushed error code and pushed ISR number */
+   add %esp, 8
    iret           /* pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP */

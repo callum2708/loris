@@ -44,11 +44,14 @@ extern "C" void isr_handler(Kernel::registers* regs)
     printf("\n");
 }
 
+Kernel::IDTPointer idtPointer;
+Kernel::IDTGate entries[IDT_NUM_ENTRIES];
+
 namespace Kernel
 {
     InterruptDescriptorTable::InterruptDescriptorTable()
     {
-        IDTPointer idtPointer;
+        memset(entries, 0x00, sizeof(entries));
         idtPointer.limit = IDT_NUM_ENTRIES * sizeof(IDTGate) - 1;
         idtPointer.base = (unsigned int)&entries;
 

@@ -19,7 +19,6 @@ stack_bottom:
 .skip 16384 # 16 KiB
 stack_top:
 
-/* Build GDT pointer and load it */
 
 # The kernel entry point.
 .section .text
@@ -33,13 +32,14 @@ _start:
 
 	# Transfer control to the main kernel.
 	call kernel_main
+	cli
 
 	# Hang if kernel_main unexpectedly returns.
-	cli
 1:	hlt
 	jmp 1b
 .size _start, . - _start
 
+/* Build GDT pointer and load it */
 .global gdt_load_and_set
 gdt_load_and_set:
    mov 4(%esp),%eax
