@@ -1,3 +1,5 @@
+.code32
+
 .section .text
 .macro ISR_NOERRCODE interruptNumber  /* define a macro, taking one parameter */
   .global isr\interruptNumber       
@@ -51,23 +53,25 @@ ISR_NOERRCODE 31
 isr_common_stub:
    pusha                    /* Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax */
 
-   mov %ds,  %ax               /* Lower 16-bits of eax = ds. */
-   push %eax                 /* save the data segment descriptor */
+   push %gs
+   push %fs
+   push %es
+   push %ds
 
-   mov %ax, 0x10  /* load the kernel data segment descriptor */
-   mov %ds, %ax
-   mov %es, %ax
-   mov %fs, %ax
-   mov %gs, %ax
+   mov $0x10, %ax /* load the kernel data segment descriptor */
+   mov %ax, %ds
+   mov %ax, %es
+   mov %ax, %fs
+   mov %ax, %gs
 
    push %esp
    call isr_handler
+    add $4, %esp
 
-   pop %eax        /* reload the original data segment descriptor */
-   mov %ds, %ax
-   mov %es, %ax
-   mov %fs, %ax
-   mov %gs, %ax
+   pop %ds
+   pop %es
+   pop %fs
+   pop %gs
 
    popa                     /* Pops edi,esi,ebp... */
    add %esp, 8

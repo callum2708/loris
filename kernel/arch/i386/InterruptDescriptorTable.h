@@ -4,7 +4,7 @@
 
 namespace Kernel
 {
-    struct IDTGate
+    extern "C" struct IDTGate
     {
         unsigned short handler_low;
         unsigned short segsel;
@@ -13,13 +13,13 @@ namespace Kernel
         unsigned short handler_high;
     } __attribute__((packed));
 
-    struct IDTPointer
+    extern "C" struct IDTPointer
     {
         unsigned short limit;
         unsigned int base;
     } __attribute__((packed));
 
-    struct registers
+    extern "C" struct registers
     {
         unsigned int ds;                                     // Data segment selector
         unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
