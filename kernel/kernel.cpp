@@ -11,11 +11,10 @@ extern "C" void kernel_main(void) {
 	Kernel::InterruptDescriptorTable idt;
 	Kernel::InterruptRequestManager::Initialise(&idt);
 
-	
-	asm volatile("sti");
-	Kernel::Timer timer;
-	
-	printf("Hello, kernel World!\n");
 
+	Kernel::Timer timer(100);
+	asm volatile("sti");
+
+	printf("Hello, kernel World!\n");
 
 }

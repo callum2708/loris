@@ -11,7 +11,7 @@ namespace Kernel
 
     public:
         static void Initialise(InterruptDescriptorTable *idt);
-        static void InstallHandler(int interruptNumber, void (*handler)(struct registers *r));
+        static void InstallHandler(int interruptNumber, void (*handler)(Registers *r));
         static void UninstallHandler(int interruptNumber);
         static void RemapPIC();
     };

@@ -50,7 +50,6 @@ isr_common_stub:
 .macro IRQ IRQNumber
   .global irq\IRQNumber
   irq\IRQNumber:
-    cli
     push 0    /* Note that these don't push an error code on the stack: */
                    /* We need to push a dummy error code */
     push \IRQNumber

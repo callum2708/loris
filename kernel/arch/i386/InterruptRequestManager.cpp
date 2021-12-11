@@ -76,7 +76,7 @@ namespace Kernel
         m_idt->CreateGate(47, (unsigned int)irq15, 0x08, 0x8E);
     }
 
-    void InterruptRequestManager::InstallHandler(int interruptNumber, void (*handler)(struct registers *r))
+    void InterruptRequestManager::InstallHandler(int interruptNumber, void (*handler)(Registers *r))
     {
         irq_routines[interruptNumber] = handler;
     }

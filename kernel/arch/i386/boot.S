@@ -33,10 +33,9 @@ _start:
 	call _init
 
 	# Transfer control to the main kernel.
-	call kernel_main
 	cli
+	call kernel_main
 
 	# Hang if kernel_main unexpectedly returns.
-1:	hlt
-	jmp 1b
-.size _start, . - _start
+hang:
+    jmp hang                            /* loop forever */
