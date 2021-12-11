@@ -4,7 +4,7 @@
 
 namespace Kernel
 {
-    extern "C" struct IDTGate
+    struct IDTGate
     {
         unsigned short handler_low;
         unsigned short segsel;
@@ -13,13 +13,13 @@ namespace Kernel
         unsigned short handler_high;
     } __attribute__((packed));
 
-    extern "C" struct IDTPointer
+    struct IDTPointer
     {
         unsigned short limit;
         unsigned int base;
     } __attribute__((packed));
 
-    extern "C" struct registers
+    struct Registers
     {
         unsigned int ds;                                     // Data segment selector
         unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
@@ -31,8 +31,6 @@ namespace Kernel
     {
     public:
         InterruptDescriptorTable();
-
-    private:
         void CreateGate(unsigned char num, unsigned int base, unsigned char sel, unsigned char flags);
     };
 }

@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include </home/callumperks1/loris/src/kernel/arch/i386/tty.h>
+#include </home/callumperks1/loris/src/kernel/arch/i386//tty.h>
 
 static Kernel::TTY tty;
 

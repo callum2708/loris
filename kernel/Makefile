@@ -28,6 +28,8 @@ LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
 KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
 kernel.o \
+io.o \
+Timer.o \
 
 OBJS=\
 $(ARCHDIR)/crti.o \

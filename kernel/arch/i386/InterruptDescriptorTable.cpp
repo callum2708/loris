@@ -37,11 +37,10 @@ extern "C" void isr31();
 
 extern "C" void load_idt(unsigned int idtPointer);
 
-extern "C" void isr_handler(Kernel::registers* regs)
+extern "C" void isr_handler(Kernel::Registers* regs)
 {
-    // printf("recieved interrupt: ");
-    // printf("%d", regs->int_no);
-    // printf("\n");
+    printf("recieved interrupt");
+    while(true);
 }
 
 Kernel::IDTPointer idtPointer;
