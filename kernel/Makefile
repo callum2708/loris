@@ -53,7 +53,7 @@ $(ARCHDIR)/crtn.o \
 all: myos.kernel
 
 myos.kernel: $(OBJS) $(ARCHDIR)/linker.ld
-	$(CPP) -T $(ARCHDIR)/linker.ld -o $@ $(CPPFLAGS) $(LINK_LIST)
+	$(CPP) -T  $(ARCHDIR)/linker.ld -o $@ $(CPPFLAGS) $(LINK_LIST)
 	grub-file --is-x86-multiboot myos.kernel
 
 $(ARCHDIR)/crtbegin.o $(ARCHDIR)/crtend.o:

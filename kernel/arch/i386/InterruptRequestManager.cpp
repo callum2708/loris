@@ -24,11 +24,10 @@ extern "C" void irq15();
 namespace Kernel
 {
     void *irq_routines[16] = {0};
-    InterruptDescriptorTable* InterruptRequestManager::m_idt = nullptr;
+    InterruptDescriptorTable *InterruptRequestManager::m_idt = nullptr;
 
     extern "C" void irq_handler(Registers *registers)
     {
-        printf("irq!!!!");
         /* This is a blank function pointer */
         void (*handler)(struct Registers * r);
 
@@ -41,19 +40,19 @@ namespace Kernel
         }
 
         /* If the IDT entry that was invoked was greater than 40
-    *  (meaning IRQ8 - 15), then we need to send an EOI to
-    *  the slave controller */
+        *  (meaning IRQ8 - 15), then we need to send an EOI to
+        *  the slave controller */
         if (registers->int_no >= 40)
         {
             outb(0xA0, 0x20);
         }
 
         /* In either case, we need to send an EOI to the master
-    *  interrupt controller too */
+        *  interrupt controller too */
         outb(0x20, 0x20);
     }
 
-    void InterruptRequestManager::Initialise(InterruptDescriptorTable* idt)
+    void InterruptRequestManager::Initialise(InterruptDescriptorTable *idt)
     {
         m_idt = idt;
         InterruptRequestManager::RemapPIC();
