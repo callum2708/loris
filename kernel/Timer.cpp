@@ -1,6 +1,5 @@
 #include "Timer.h"
 #include <stdio.h>
-#include "arch/i386/InterruptRequestManager.h"
 #include "io.h"
 
 namespace Kernel
@@ -9,7 +8,7 @@ namespace Kernel
     Timer::Timer(int frequency)
     {
         TimerPhase(frequency);
-        InterruptRequestManager::InstallHandler(0, TickHandler);
+        InstallHandler(0, TickHandler);
     }
 
     void Timer::TickHandler(Registers *registers)
@@ -19,7 +18,7 @@ namespace Kernel
 
         /* Every 18 clocks (approximately 1 second), we will
         *  display a message on the screen */
-        if (ticks % 18 == 0)
+        if (ticks % 100 == 0)
         {
             printf("One second has passed\n");
         }

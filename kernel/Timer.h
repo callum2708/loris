@@ -1,4 +1,4 @@
-#include "arch/i386/InterruptRequestManager.h"
+#include "arch/i386/InterruptDescriptorTable.h"
 
 namespace Kernel
 {

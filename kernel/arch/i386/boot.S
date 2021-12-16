@@ -37,5 +37,6 @@ _start:
 	call kernel_main
 
 	# Hang if kernel_main unexpectedly returns.
-hang:
-    jmp hang                            /* loop forever */
+spin:
+  hlt
+  jmp spin

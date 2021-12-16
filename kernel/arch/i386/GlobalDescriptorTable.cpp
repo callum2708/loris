@@ -8,12 +8,13 @@
 
 extern "C" void gdt_load_and_set(unsigned int);
 
+Kernel::GlobalDescriptorTableEntry gdt_entries[GDT_NUM_ENTRIES];
+Kernel::GlobalDescriptorTablePointer gtdPointer;
+
 namespace Kernel
 {
-    GlobalDescriptorTable::GlobalDescriptorTable()
+    void InitGDT()
     {
-    
-        GlobalDescriptorTablePointer gtdPointer;
         gtdPointer.limit = (sizeof(GlobalDescriptorTableEntry) * GDT_NUM_ENTRIES) - 1 ;
         gtdPointer.base = (unsigned int)&gdt_entries;
 
@@ -25,7 +26,7 @@ namespace Kernel
         gdt_load_and_set((unsigned int)&gtdPointer);
     }
 
-    void GlobalDescriptorTable::CreateEntry(int num, unsigned int base, unsigned int limit, unsigned char access, unsigned char gran)
+    void CreateEntry(int num, unsigned int base, unsigned int limit, unsigned char access, unsigned char gran)
     {
         gdt_entries[num].base_low = (base & 0xFFFF);
         gdt_entries[num].base_mid = (base >> 16) & 0xFF;

@@ -23,12 +23,7 @@ namespace Kernel
         unsigned int base;    /* Address to the first gdt entry */
     } __attribute__((packed));
 
-    class GlobalDescriptorTable
-    {
-    private:
-        void CreateEntry(int num, unsigned int base, unsigned int limit, unsigned char access, unsigned char gran);
-        GlobalDescriptorTableEntry gdt_entries[GDT_NUM_ENTRIES];
-    public:
-        GlobalDescriptorTable();
-    };
+    void CreateEntry(int num, unsigned int base, unsigned int limit, unsigned char access, unsigned char gran);
+    void InitGDT();
+
 }

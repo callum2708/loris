@@ -8,25 +8,25 @@ load_idt:
 .macro ISR_NOERRCODE interruptNumber  /* define a macro, taking one parameter */
   .global isr\interruptNumber       
   isr\interruptNumber:
-    push  0
-    push \interruptNumber
+    pushl $0
+    pushl $\interruptNumber
     jmp isr_common_stub
 .endm
 
 .macro ISR_ERRCODE interruptNumber
   .global isr\interruptNumber
   isr\interruptNumber:
-    push \interruptNumber
+    pushl $\interruptNumber
     jmp isr_common_stub
 .endm
 
 isr_common_stub:
-   pusha                    /* Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax */
+   pushal                    /* Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax */
 
-   push %gs
-   push %fs
-   push %es
-   push %ds
+   pushl %gs
+   pushl %fs
+   pushl %es
+   pushl %ds
 
    mov $0x10, %ax /* load the kernel data segment descriptor */
    mov %ax, %ds
@@ -34,49 +34,53 @@ isr_common_stub:
    mov %ax, %fs
    mov %ax, %gs
 
-   push %esp
+   pushl %esp
    call isr_handler
    add $4, %esp
 
-   pop %ds
-   pop %es
-   pop %fs
-   pop %gs
+   popl %ds
+   popl %es
+   popl %fs
+   popl %gs
 
-   popa                     /* Pops edi,esi,ebp... */
+   popal                     /* Pops edi,esi,ebp... */
    add $8, %esp
    iret           /* pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP */
 
 .macro IRQ IRQNumber
   .global irq\IRQNumber
   irq\IRQNumber:
-    push 0    /* Note that these don't push an error code on the stack: */
-                   /* We need to push a dummy error code */
-    push \IRQNumber
+    pushl $0    /* Note that these don't pushl an error code on the stack: */
+    pushl $\IRQNumber
     jmp irq_common_stub
 .endm
 
 irq_common_stub:
-    pusha
-    push %gs
-    push %fs
-    push %es
-    push %ds
-    mov $0x10, %ax
-    mov %ax, %ds
-    mov %ax, %es
-    mov %ax, %fs
-    mov %ax, %gs
-    push %esp
-    call irq_handler
-    add $4, %esp
-    pop %ds
-    pop %es
-    pop %fs
-    pop %gs
-    popa
-    add $8, %esp
-    iret
+  pushal                    /* Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax */
+
+   pushl %gs
+   pushl %fs
+   pushl %es
+   pushl %ds
+
+   mov $0x10, %ax /* load the kernel data segment descriptor */
+   mov %ax, %ds
+   mov %ax, %es
+   mov %ax, %fs
+   mov %ax, %gs
+
+   pushl %esp
+   call irq_handler
+   add $4, %esp
+
+   popl %ds
+   popl %es
+   popl %fs
+   popl %gs
+
+   popal                     /* Pops edi,esi,ebp... */
+   add $8, %esp
+   iret           /* pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP */
 
 ISR_NOERRCODE 0
 ISR_NOERRCODE 1
@@ -110,20 +114,20 @@ ISR_NOERRCODE 28
 ISR_NOERRCODE 29
 ISR_NOERRCODE 30
 ISR_NOERRCODE 31
-IRQ 0
-IRQ 1
-IRQ 2
-IRQ 3
-IRQ 4
-IRQ 5
-IRQ 6
-IRQ 7
-IRQ 8
-IRQ 9
-IRQ 10
-IRQ 11
-IRQ 12
-IRQ 13
-IRQ 14
-IRQ 15
+IRQ 32
+IRQ 33
+IRQ 34
+IRQ 35
+IRQ 36
+IRQ 37
+IRQ 38
+IRQ 39
+IRQ 40
+IRQ 41
+IRQ 42
+IRQ 43
+IRQ 44
+IRQ 45
+IRQ 46
+IRQ 47
 

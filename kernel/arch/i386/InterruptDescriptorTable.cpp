@@ -1,6 +1,7 @@
 #include "InterruptDescriptorTable.h"
 #include <stdio.h>
 #include <string.h>
+#include "../../io.h"
 
 extern "C" void isr0();
 extern "C" void isr1();
@@ -34,13 +35,57 @@ extern "C" void isr28();
 extern "C" void isr29();
 extern "C" void isr30();
 extern "C" void isr31();
+extern "C" void irq32();
+extern "C" void irq33();
+extern "C" void irq34();
+extern "C" void irq35();
+extern "C" void irq36();
+extern "C" void irq37();
+extern "C" void irq38();
+extern "C" void irq39();
+extern "C" void irq40();
+extern "C" void irq41();
+extern "C" void irq42();
+extern "C" void irq43();
+extern "C" void irq44();
+extern "C" void irq45();
+extern "C" void irq46();
+extern "C" void irq47();
+
+void *irq_routines[16] = {0};
 
 extern "C" void load_idt(unsigned int idtPointer);
 
-extern "C" void isr_handler(Kernel::Registers* regs)
+extern "C" void isr_handler(Kernel::Registers *regs)
 {
     printf("recieved interrupt");
-    while(true);
+    while (true);
+}
+
+extern "C" void irq_handler(Kernel::Registers *registers)
+{
+    /* This is a blank function pointer */
+    void (*handler)(struct Kernel::Registers * r);
+
+    /* Find out if we have a custom handler to run for this
+    *  IRQ, and then finally, run it */
+    handler = irq_routines[registers->int_no - 32];
+    if (handler)
+    {
+        handler(registers);
+    }
+
+    /* If the IDT entry that was invoked was greater than 40
+        *  (meaning IRQ8 - 15), then we need to send an EOI to
+        *  the slave controller */
+    if (registers->int_no >= 40)
+    {
+        outb(0xA0, 0x20);
+    }
+
+    /* In either case, we need to send an EOI to the master
+        *  interrupt controller too */
+    outb(0x20, 0x20);
 }
 
 Kernel::IDTPointer idtPointer;
@@ -48,11 +93,12 @@ Kernel::IDTGate entries[IDT_NUM_ENTRIES];
 
 namespace Kernel
 {
-    InterruptDescriptorTable::InterruptDescriptorTable()
+    void Init_IDT()
     {
         memset(entries, 0x00, sizeof(entries));
         idtPointer.limit = IDT_NUM_ENTRIES * sizeof(IDTGate) - 1;
         idtPointer.base = (unsigned int)&entries;
+
 
         CreateGate(0, (unsigned int)isr0, 0x08, 0x8E);
         CreateGate(1, (unsigned int)isr1, 0x08, 0x8E);
@@ -86,11 +132,29 @@ namespace Kernel
         CreateGate(29, (unsigned int)isr29, 0x08, 0x8E);
         CreateGate(30, (unsigned int)isr30, 0x08, 0x8E);
         CreateGate(31, (unsigned int)isr31, 0x08, 0x8E);
-
         load_idt((unsigned int)&idtPointer);
+
+        RemapPIC();
+        CreateGate(32, (unsigned int)irq32, 0x08, 0x8E);
+        CreateGate(33, (unsigned int)irq33, 0x08, 0x8E);
+        CreateGate(34, (unsigned int)irq34, 0x08, 0x8E);
+        CreateGate(35, (unsigned int)irq35, 0x08, 0x8E);
+        CreateGate(36, (unsigned int)irq36, 0x08, 0x8E);
+        CreateGate(37, (unsigned int)irq37, 0x08, 0x8E);
+        CreateGate(38, (unsigned int)irq38, 0x08, 0x8E);
+        CreateGate(39, (unsigned int)irq39, 0x08, 0x8E);
+        CreateGate(40, (unsigned int)irq40, 0x08, 0x8E);
+        CreateGate(41, (unsigned int)irq41, 0x08, 0x8E);
+        CreateGate(42, (unsigned int)irq42, 0x08, 0x8E);
+        CreateGate(43, (unsigned int)irq43, 0x08, 0x8E);
+        CreateGate(44, (unsigned int)irq44, 0x08, 0x8E);
+        CreateGate(45, (unsigned int)irq45, 0x08, 0x8E);
+        CreateGate(46, (unsigned int)irq46, 0x08, 0x8E);
+        CreateGate(47, (unsigned int)irq47, 0x08, 0x8E);
+
     }
 
-    void InterruptDescriptorTable::CreateGate(unsigned char num, unsigned int base, unsigned char sel, unsigned char flags)
+    void CreateGate(unsigned char num, unsigned int base, unsigned char sel, unsigned char flags)
     {
         entries[num].handler_low = base & 0xFFFF;
         entries[num].handler_high = (base >> 16) & 0xFFFF;
@@ -101,4 +165,29 @@ namespace Kernel
         // It sets the interrupt gate's privilege level to 3.
         entries[num].config = flags /* | 0x60 */;
     }
+
+    void RemapPIC()
+    {
+        outb(0x20, 0x11);
+        outb(0xA0, 0x11);
+        outb(0x21, 0x20);
+        outb(0xA1, 0x28);
+        outb(0x21, 0x04);
+        outb(0xA1, 0x02);
+        outb(0x21, 0x01);
+        outb(0xA1, 0x01);
+        outb(0x21, 0x0);
+        outb(0xA1, 0x0);
+    }
+
+    void InstallHandler(int interruptNumber, void (*handler)(Registers *r))
+    {
+        irq_routines[interruptNumber] = handler;
+    }
+
+    void UninstallHandler(int interruptNumber)
+    {
+        irq_routines[interruptNumber] = 0;
+    }
+
 }

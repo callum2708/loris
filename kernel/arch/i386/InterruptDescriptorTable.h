@@ -21,16 +21,15 @@ namespace Kernel
 
     struct Registers
     {
-        unsigned int gs, fs, es, ds;      /* pushed the segs last */
+        unsigned int gs, fs, es, ds;                         /* pushed the segs last */
         unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
         unsigned int int_no, err_code;                       // Interrupt number and error code (if applicable)
         unsigned int eip, cs, eflags, useresp, ss;           // Pushed by the processor automatically.
     };
 
-    class InterruptDescriptorTable
-    {
-    public:
-        InterruptDescriptorTable();
-        void CreateGate(unsigned char num, unsigned int base, unsigned char sel, unsigned char flags);
-    };
+    void Init_IDT();
+    void CreateGate(unsigned char num, unsigned int base, unsigned char sel, unsigned char flags);
+    void RemapPIC();
+    void InstallHandler(int interruptNumber, void (*handler)(Registers *r));
+    void UninstallHandler(int interruptNumber);
 }
