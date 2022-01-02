@@ -30,7 +30,10 @@ $(KERNEL_ARCH_OBJS) \
 kernel.o \
 io.o \
 Timer.o \
-
+Heap.o \
+paging.o \
+kmalloc.o \
+../Util/OrderedList.o
 
 OBJS=\
 $(ARCHDIR)/crti.o \
