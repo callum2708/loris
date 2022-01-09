@@ -31,7 +31,7 @@ public:
    void Free(void *p);
 
 private:
-   ordered_array_t m_index;
+   OrderedList<Header *> m_index;
    uint32_t m_startAddress; // The start of our allocated space.
    uint32_t m_endAddress;   // The end of our allocated space. May be expanded up to max_address.
    uint32_t m_maxAddress;   // The maximum address the heap can be expanded to.
@@ -43,4 +43,4 @@ private:
    uint32_t Contract(uint32_t new_size);
 };
 
-   bool HeaderLessThan(void *a, void *b);
+bool HeaderLessThan(void *a, void *b);

@@ -33,7 +33,6 @@ Timer.o \
 Heap.o \
 paging.o \
 kmalloc.o \
-../Util/OrderedList.o
 
 OBJS=\
 $(ARCHDIR)/crti.o \

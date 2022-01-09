@@ -7,9 +7,8 @@ extern PageDirectory *kernel_directory;
 extern PageDirectory *current_directory;
 
 Heap::Heap(uint32_t start, uint32_t end_addr, uint32_t max, bool m_supervisor, bool m_readonly)
+    : m_index((void *)start, HEAP_INDEX_SIZE, &HeaderLessThan)
 {
-    // Initialise the index.
-    m_index = place_ordered_array((void *)start, HEAP_INDEX_SIZE, &HeaderLessThan);
     // Shift the start address forward to resemble where we can start putting data.
     start += sizeof(type_t) * HEAP_INDEX_SIZE;
 
@@ -31,7 +30,7 @@ Heap::Heap(uint32_t start, uint32_t end_addr, uint32_t max, bool m_supervisor, b
     hole->size = end_addr - start;
     hole->magic = HEAP_MAGIC;
     hole->is_hole = 1;
-    insert_ordered_array((void *)hole, &m_index);
+    m_index.Insert(hole);
 }
 
 void *Heap::Alloc(uint32_t size, bool page_align)
@@ -56,9 +55,9 @@ void *Heap::Alloc(uint32_t size, bool page_align)
         // Vars to hold the index of, and value of, the endmost header found so far.
         uint32_t idx = -1;
         uint32_t value = 0x0;
-        while (iterator < m_index.size)
+        while (iterator < m_index.Size())
         {
-            uint32_t tmp = (uint32_t)lookup_ordered_array(iterator, &m_index);
+            uint32_t tmp = (uint32_t)m_index.GetItemAtIndex(iterator);
             if (tmp > value)
             {
                 value = tmp;
@@ -77,12 +76,12 @@ void *Heap::Alloc(uint32_t size, bool page_align)
             Footer *footer = (Footer *)(old_m_endAddress + header->size - sizeof(Footer));
             footer->magic = HEAP_MAGIC;
             footer->header = header;
-            insert_ordered_array((void *)header, &m_index);
+            m_index.Insert(header);
         }
         else
         {
             // The last header needs adjusting.
-            Header *header = (Header *)lookup_ordered_array(idx, &m_index);
+            Header *header = (Header *)m_index.GetItemAtIndex(idx);
             header->size += new_length - old_length;
             // Rewrite the footer.
             Footer *footer = (Footer *)((uint32_t)header + header->size - sizeof(Footer));
@@ -93,7 +92,7 @@ void *Heap::Alloc(uint32_t size, bool page_align)
         return Alloc(size, page_align);
     }
 
-    Header *orig_hole_header = (Header *)lookup_ordered_array(iterator, &m_index);
+    Header *orig_hole_header = m_index.GetItemAtIndex(iterator);
     uint32_t orig_hole_pos = (uint32_t)orig_hole_header;
     uint32_t orig_hole_size = orig_hole_header->size;
     // Here we work out if we should split the hole we found into two parts.
@@ -122,7 +121,7 @@ void *Heap::Alloc(uint32_t size, bool page_align)
     else
     {
         // Else we don't need this hole any more, delete it from the index.
-        remove_ordered_array(iterator, &m_index);
+        m_index.Remove(iterator);
     }
     // Overwrite the original header...
     Header *block_header = (Header *)orig_hole_pos;
@@ -148,7 +147,7 @@ void *Heap::Alloc(uint32_t size, bool page_align)
             hole_footer->magic = HEAP_MAGIC;
             hole_footer->header = hole_header;
         }
-        insert_ordered_array((void *)hole_header, &m_index);
+        m_index.Insert(hole_header);
     }
 
     return (void *)((uint32_t)block_header + sizeof(Header));
@@ -168,7 +167,7 @@ void Heap::Free(void *p)
     //    ASSERT(footer->magic == HEAP_MAGIC);
     header->is_hole = 1;
 
-    char do_add = 1;
+    bool do_add = true;
     // Unify left
     // If the thing immediately to the left of us is a footer...
     Footer *test_footer = (Footer *)((uint32_t)header - sizeof(Footer));
@@ -179,7 +178,7 @@ void Heap::Free(void *p)
         header = test_footer->header;       // Rewrite our header with the new one.
         footer->header = header;            // Rewrite our footer to point to the new header.
         header->size += cache_size;         // Change the size.
-        do_add = 0;                         // Since this header is already in the index, we don't want to add it again.
+        do_add = false;                     // Since this header is already in the index, we don't want to add it again.
     }
 
     // Unify right
@@ -194,14 +193,14 @@ void Heap::Free(void *p)
         footer = test_footer;
         // Find and remove this header from the index.
         uint32_t iterator = 0;
-        while ((iterator < m_index.size) &&
-               (lookup_ordered_array(iterator, &m_index) != (void *)test_header))
+        while ((iterator < m_index.Size()) &&
+               (m_index.GetItemAtIndex(iterator) != test_header))
             iterator++;
 
         // Make sure we actually found the item.
         //TODO: Add Assert
         // ASSERT(iterator < index.size);
-        remove_ordered_array(iterator, &m_index);
+        m_index.Remove(iterator);
     }
     // If the footer location is the end address, we can contract.
     if ((uint32_t)footer + sizeof(Footer) == m_endAddress)
@@ -221,26 +220,26 @@ void Heap::Free(void *p)
         {
             // We will no longer exist :(. Remove us from the index.
             uint32_t iterator = 0;
-            while ((iterator < m_index.size) &&
-                   (lookup_ordered_array(iterator, &m_index) != (void *)test_header))
+            while ((iterator < m_index.Size()) &&
+                   (m_index.GetItemAtIndex(iterator) != test_header))
                 iterator++;
             // If we didn't find ourselves, we have nothing to remove.
-            if (iterator < m_index.size)
-                remove_ordered_array(iterator, &m_index);
+            if (iterator < m_index.Size())
+                m_index.Remove(iterator);
         }
     }
 
-    if (do_add == 1)
-        insert_ordered_array((void *)header, &m_index);
+    if (do_add)
+        m_index.Insert(header);
 }
 
 uint32_t Heap::FindSmallestHole(uint32_t size, bool pageAlign)
 {
     // Find the smallest hole that will fit.
     uint32_t iterator = 0;
-    while (iterator < m_index.size)
+    while (iterator < m_index.Size())
     {
-        Header *header = (Header *)lookup_ordered_array(iterator, &m_index);
+        Header *header = m_index.GetItemAtIndex(iterator);
         if (pageAlign)
         {
             uint32_t location = (uint32_t)header;
@@ -257,7 +256,7 @@ uint32_t Heap::FindSmallestHole(uint32_t size, bool pageAlign)
         iterator++;
     }
 
-    if (iterator == m_index.size)
+    if (iterator == m_index.Size())
         return -1; // We got to the end and didn't find anything.
     else
         return iterator;

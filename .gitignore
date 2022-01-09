@@ -2,3 +2,5 @@
 **/*.d
 sysroot/**/*
 **/*.kernel
+**/grub.cfg
+**/*.iso
