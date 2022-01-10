@@ -8,3 +8,5 @@ void* kmalloc_ap(uint32_t size, uint32_t *phys); // page aligned and returns a p
 
 void* kmalloc(uint32_t sz, bool align, uint32_t *phys);
 void kfree(void *ptr);
+
+void SetPlacementAddress(uint32_t address);

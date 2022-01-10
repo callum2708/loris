@@ -11,12 +11,9 @@ void *kmalloc(uint32_t size, bool align, uint32_t *phys)
 {
     if (kheap)
     {
-        printf("heap\n");
         return (void *)kheap->Alloc(size, align);
     }
 
-
-    printf("placement\n");
     if (align == true && (placement_address & 0xFFFFF000)) // If the address is not already page-aligned
     {
         // Align it.
@@ -29,7 +26,7 @@ void *kmalloc(uint32_t size, bool align, uint32_t *phys)
     }
     uint32_t tmp = placement_address;
     placement_address += size;
-    return (void*)tmp;
+    return (void *)tmp;
 }
 
 void kfree(void *ptr)
@@ -40,15 +37,20 @@ void kfree(void *ptr)
     }
 }
 
-void* kmalloc_a(uint32_t size)
+void *kmalloc_a(uint32_t size)
 {
     return kmalloc(size, true, nullptr);
 }
-void* kmalloc_p(uint32_t size, uint32_t *phys)
+void *kmalloc_p(uint32_t size, uint32_t *phys)
 {
     return kmalloc(size, false, phys);
 }
-void* kmalloc_ap(uint32_t size, uint32_t *phys)
+void *kmalloc_ap(uint32_t size, uint32_t *phys)
 {
     return kmalloc(size, true, phys);
+}
+
+void SetPlacementAddress(uint32_t address)
+{
+    placement_address = address;
 }

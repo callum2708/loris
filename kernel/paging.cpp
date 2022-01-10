@@ -177,8 +177,6 @@ void initialise_paging()
 
     switch_page_directory(kernel_directory);
 
-    printf("help");
-
     //do this in two steps as we don't have a heap/operator new yet
     kheap = (Heap *)kmalloc(sizeof(Heap), false, nullptr);
     *kheap = Heap(KHEAP_START, KHEAP_START + KHEAP_INITIAL_SIZE, 0xCFFFF000, false, false);
