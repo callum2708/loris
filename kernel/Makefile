@@ -58,14 +58,14 @@ $(ARCHDIR)/crtn.o \
 all: myos.kernel
 
 myos.kernel: $(OBJS) $(ARCHDIR)/linker.ld
-	$(CPP) -T  $(ARCHDIR)/linker.ld -o $@ $(CPPFLAGS) $(LINK_LIST)
+	$(CPP) -T  $(ARCHDIR)/linker.ld -o $@ $(CPPFLAGS) $(LINK_LIST) 
 	grub-file --is-x86-multiboot myos.kernel
 
 $(ARCHDIR)/crtbegin.o $(ARCHDIR)/crtend.o:
 	OBJ=`$(CPP) $(CPPFLAGS) $(LDFLAGS) -print-file-name=$(@F)` && cp "$$OBJ" $@
 
 .cpp.o:
-	$(CPP) -MD -c $(CPPFLAGS) $< -o $@
+	$(CPP) -MD -c $(CPPFLAGS) $< -o $@ -I.
 
 .S.o:
 	$(CPP) -MD -c $< -o $@ $(CPPFLAGS)
