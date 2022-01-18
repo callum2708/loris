@@ -100,8 +100,9 @@ void free_frame(Page *page)
 
 void switch_page_directory(PageDirectory *dir)
 {
+
     current_directory = dir;
-    asm volatile("mov %0, %%cr3" ::"r"(&dir->TablesPhysical));
+    asm volatile("mov %0, %%cr3" ::"r"(dir->PhysicalAddress));
     uint32_t cr0;
     asm volatile("mov %%cr0, %0"
                  : "=r"(cr0));
@@ -144,9 +145,10 @@ void initialise_paging()
     memset(frames, 0, INDEX_FROM_BIT(nframes));
 
     // Let's make a page directory.
+    uint32_t phys;
     kernel_directory = (PageDirectory *)kmalloc_a(sizeof(PageDirectory));
     memset(kernel_directory, 0, sizeof(PageDirectory));
-    current_directory = kernel_directory;
+    kernel_directory->PhysicalAddress = (uint32_t)kernel_directory->TablesPhysical;
 
     int i = 0;
     for (i = KHEAP_START; i < KHEAP_START + KHEAP_INITIAL_SIZE; i += 0x1000)
@@ -160,7 +162,7 @@ void initialise_paging()
     // by calling kmalloc(). A while loop causes this to be
     // computed on-the-fly rather than once at the start.
     i = 0;
-    while (i < placement_address+0x1000)
+    while (i < placement_address + 0x1000)
     {
         // Kernel code is readable but not writeable from userspace.
         alloc_frame(get_page(i, true, kernel_directory), false, false);
@@ -174,10 +176,81 @@ void initialise_paging()
     // Before we enable paging, we must register our page fault handler.
     //TODO: page fault handler
     //    InstallHandler(14, page_fault);
-
     switch_page_directory(kernel_directory);
 
     //do this in two steps as we don't have a heap/operator new yet
     kheap = (Heap *)kmalloc(sizeof(Heap), false, nullptr);
     *kheap = Heap(KHEAP_START, KHEAP_START + KHEAP_INITIAL_SIZE, 0xCFFFF000, false, false);
+
+    current_directory = clone_directory(kernel_directory);
+    switch_page_directory(current_directory); 
+}
+
+PageDirectory *clone_directory(PageDirectory *src)
+{
+    uint32_t phys;
+    // Make a new page directory and obtain its physical address.
+    PageDirectory *dir = (PageDirectory *)kmalloc_ap(sizeof(PageDirectory), &phys);
+    // Ensure that it is blank.
+    memset(dir, 0, sizeof(PageDirectory));
+
+    // Get the offset of tablesPhysical from the start of the page_directory_t structure.
+    uint32_t offset = (uint32_t)dir->TablesPhysical - (uint32_t)dir;
+    // Then the physical address of dir->tablesPhysical is:
+    dir->PhysicalAddress = phys + offset;
+
+    int i;
+    for (i = 0; i < 1024; i++)
+    {
+        if (!src->Tables[i])
+            continue;
+
+        if (kernel_directory->Tables[i] == src->Tables[i])
+        {
+            // It's in the kernel, so just use the same pointer.
+            dir->Tables[i] = src->Tables[i];
+            dir->TablesPhysical[i] = src->TablesPhysical[i];
+        }
+        else
+        {
+            // Copy the table.
+            uint32_t phys;
+            dir->Tables[i] = clone_table(src->Tables[i], &phys);
+            dir->TablesPhysical[i] = phys | 0x07;
+        }
+    }
+    return dir;
+}
+
+PageTable *clone_table(PageTable *src, uint32_t *physAddr)
+{
+    // Make a new page table, which is page aligned.
+    PageTable *table = (PageTable *)kmalloc_ap(sizeof(PageTable), physAddr);
+    // Ensure that the new table is blank.
+    memset(table, 0, sizeof(PageDirectory));
+
+    // For every entry in the table...
+    int i;
+    for (i = 0; i < 1024; i++)
+    {
+        if (!src->Pages[i].Frame)
+            continue;
+
+        // Get a new frame.
+        alloc_frame(&table->Pages[i], false, false);
+        // Clone the flags from source to destination.
+        if (src->Pages[i].Present)
+            table->Pages[i].Present = 1;
+        if (src->Pages[i].ReadWrite)
+            table->Pages[i].ReadWrite = 1;
+        if (src->Pages[i].User)
+            table->Pages[i].User = 1;
+        if (src->Pages[i].Accessed)
+            table->Pages[i].Accessed = 1;
+        if (src->Pages[i].Dirty)
+            table->Pages[i].Dirty = 1;
+        // Physically copy the data across. This function is in process.s.
+        copy_page_physical(src->Pages[i].Frame * 0x1000, table->Pages[i].Frame * 0x1000);
+    }
+    return table;
 }

@@ -6,6 +6,7 @@
 #define INDEX_FROM_BIT(a) (a / (8 * 4))
 #define OFFSET_FROM_BIT(a) (a % (8 * 4))
 
+
 struct Page
 {
    uint32_t Present : 1;  // Page present in memory
@@ -29,6 +30,7 @@ struct PageDirectory
    uint32_t PhysicalAddress;
 };
 
+extern PageDirectory *current_directory;
 void initialise_paging();
 void switch_page_directory(PageDirectory *newPageDirectory);
 Page *get_page(uint32_t address, int make, PageDirectory *dir);
@@ -40,5 +42,10 @@ uint32_t test_frame(uint32_t frame_addr);
 uint32_t first_frame();
 void alloc_frame(Page *page, bool isKernel, bool isWritable);
 void free_frame(Page *page);
+
+PageDirectory *clone_directory(PageDirectory *src);
+PageTable *clone_table(PageTable *src, uint32_t *physAddr);
+extern "C" void copy_page_physical(uint32_t src, uint32_t destination);
+
 
 void page_fault(Kernel::Registers *registers);

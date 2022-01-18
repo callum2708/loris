@@ -32,9 +32,12 @@ io.o \
 Timer.o \
 Heap.o \
 paging.o \
+PagingAssembly.o \
 kmalloc.o \
 FIleSystem/FileSystem.o \
 FIleSystem/initrd.o \
+Task.o \
+ReadEIP.o \
 
 OBJS=\
 $(ARCHDIR)/crti.o \

@@ -13,7 +13,6 @@ export EXEC_PREFIX=$PREFIX
 export BOOTDIR=/boot
 export LIBDIR=$EXEC_PREFIX/lib
 export INCLUDEDIR=$PREFIX/include
-
 export CFLAGS='-O2 -g'
 export CPPFLAGS='-ffreestanding -nostdlib -fno-exceptions -fno-rtti -fpermissive -ggdb -mno-red-zone'
 

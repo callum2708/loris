@@ -32,7 +32,8 @@ _start:
 	# Call the global constructors.
 	call _init
 
-	 push %ebx
+	push %esp
+	push %ebx
 
 	# Transfer control to the main kernel.
 	cli
